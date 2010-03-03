@@ -1,0 +1,1 @@
+resources :download_inquiries, :as => "download-inquiries"

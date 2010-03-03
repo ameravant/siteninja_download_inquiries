@@ -1,0 +1,41 @@
+%a{:id => "contact-form"}
+- form_for :download_inquiry, :url => download_inquiries_path, :html => { :onsubmit => "form_submitted('Sending your message...')"}  do |f|
+  %fieldset
+    = f.error_messages :header_message => "Unable to send your message"
+    %table{ :cellspacing => 0 }
+      - fields_for :person do |p|
+        %tr
+          %td= p.label :first_name
+          %td
+            = p.text_field :first_name
+            %span{:class => "small red"} *required
+        %tr
+          %td= p.label :last_name
+          %td
+            = p.text_field :last_name
+            %span{:class => "small red"} *required
+        %tr
+          %td= f.label :email
+          %td
+            = f.text_field :email
+            %span{:class => "small red"} *required
+        %tr
+          %td= p.label :phone
+          %td= p.text_field :phone, :size => 20
+        %tr.top
+          %td
+            = f.label :inquiry, "Your message"
+            %br
+            %span{:class => "small red"} *required
+          %td
+            = f.text_area :inquiry,  :size => "60x8"
+            = text_field_tag "company", nil, :size => 1, :id => "inquiry_company"
+    %h2 Please read and agree to the Cut Through Communications License Agreement.
+    %div.agreement{:style => "height: 150px; overflow:scroll; width: 100%;border:1px solid black;"}
+      =render :partial => "agreement"
+    %p
+      = f.check_box :agreement 
+      ==By checking this box, you acknowledge that you comply with the CTC License Agreement.
+    - fancy_submit do
+      = f.submit "Submit inquiry"
+
