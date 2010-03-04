@@ -38,7 +38,7 @@ class DownloadInquiriesController < InquiriesController
       if !@download_inquiry.save
         render :action => "new"
       else
-        redirect_to "/"
+        redirect_to "/demo-download"
         flash[:notice] = "Message sent!"
       end
     end
