@@ -1,0 +1,80 @@
+
+%h1= large_icon('User') + ' ' + "People"
+%div.box
+  .float-right
+    - form_tag(request.path, :method => "get", :id => "search_form") do
+      - fields_for :search do |f|
+        = tag(:input, :id => "search", :name => "q", :type => "search", :size => "25", :value => (params[:q] ? params[:q] : nil), :autosave => "site-ninja.com", :results => 10)
+        = f.select :group, ([['- Select a Group -','']] + PersonGroup.all.collect {|p| [p.title, p.id] }).compact
+      = submit_tag "Search"
+      - unless params[:q].blank?
+        = link_to "clear search", request.path
+
+    - content_for :head do
+      %script
+        Event.observe(window, 'load', function() {
+        $('search').select();
+        })
+  %span.hmenu
+    = icon 'Plus', new_admin_person_path
+    = link_to 'Add a new person', new_admin_person_path
+  %span.hmenu
+    = icon 'Folder2', admin_person_groups_path
+    = link_to 'View Groups', admin_person_groups_path
+  %span.hmenu
+    = icon 'Folder2', "/admin/people.csv?q=#{params[:q]}&search%5Bgroup%5D=#{params[:search] ? params[:search][:group] : ''}"
+    = link_to 'Export', "/admin/people.csv?q=#{params[:q]}&search%5Bgroup%5D=#{params[:search] ? params[:search][:group] : ''}"
+-if @cms_config['modules']['members'] && @unconfirmed_people && @unconfirmed_people.any?
+  %h2== Found #{pluralize @unconfirmed_people.size, "Unconfirmed person"}
+  /-form_for :people, :url => admin_people_path do |f|
+  -if @unconfirmed_people.total_pages > 1
+    =will_paginate @unconfirmed_people
+  %div
+    %table.full_width
+      %th Name
+      %th Email
+      %th Confirm
+      %th Delete
+      - for person in @unconfirmed_people
+        %tr[person]{ :class => cycle('odd','even') }
+          %td
+            = link_to h(person.last_name) + ", " + (person.first_name), person_path(person)
+          %td= person.email
+          %td.small= confirm_icon(person, admin_person_path(person, :person => {:confirmed => true}), "#{person.last_name},#{person.first_name}")
+          %td.small= trash_icon(person, admin_person_path(person), "#{person.last_name},#{person.first_name}")
+%h2== Found #{pluralize @people_count.size, "person"}
+%div
+  -if @people.total_pages > 1 
+    =will_paginate @people
+%table.full_width
+  %th name
+  %th{:style => "width: 80px;"} type
+  %th email
+  %th images
+  %th inquiries
+  %th roles
+  %th groups
+  %th Delete
+  - for person in @people
+    %tr[person]{ :class => cycle('odd','even') }
+      %td
+        = icon 'Write', edit_admin_person_path(person)
+        = link_to person.name, edit_admin_person_path(person)
+      %td
+        -if CMS_CONFIG['modules']['profiles'] && person.is_a?(Profile)
+          ="#{icon("Lock Open", nil, nil, nil, "16x16", "green")} Profile"
+        -else
+          = person.user ? (person.user.active ? "#{icon("Lock Open", nil, nil, nil, "16x16", "green")} User" : "#{icon("Lock", nil, nil, nil, "16x16", "red")} Inactive User") : "#{icon("User")} Contact"
+      %td= person.email unless person.email.blank?
+      %td
+        = icon "Picture", [:admin, person, :images]
+        = link_to person.images.size, [:admin, person, :images]
+      %td
+        - if person.inquiries.empty?
+          0
+        - else
+          = link_to(person.inquiries.size, (person.inquiries.size == 1 ? admin_person_inquiry_path(person, person.inquiries.first) : admin_person_inquiries_path(person)))
+      %td.small= person.person_groups.is_role.collect(&:title).join(", ")
+      %td.small= person.person_groups.is_subscription.collect(&:title).join(", ")
+      %td.small= trash_icon(person, admin_person_path(person), "#{person.last_name},#{person.first_name}")
+

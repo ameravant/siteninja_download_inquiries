@@ -1,0 +1,42 @@
+- content_for :meta_title do
+  Inquiries
+
+%h1= yield(:meta_title).strip
+
+.box
+  .float-right= render :partial => "/shared/search"
+  - if @inquiries.total_pages > 1
+    %span.gray== Page #{@inquiries.current_page} of #{@inquiries.total_pages}
+  = clear
+
+- unless params[:q].blank?
+  %h2== Found #{pluralize @all_inquiries.size, "event"}
+- else
+  %br
+
+%table.full_width{ :cellspacing => "0" }
+  %thead
+    %tr
+      %th Number
+      %th Message
+      %th Name
+      %th Email
+      %th Time
+      %th.center Options
+  - if @inquiries.total_pages > 1
+    %tfoot
+      %tr
+        %td{ :colspan => "4" }
+          = will_paginate @inquiries
+  %tbody
+    - for inquiry in @inquiries
+      %tr{ :class => cycle('odd', 'even') }
+        %td= inquiry.id
+        %td= link_to h(truncate(inquiry.inquiry, :length => 30)), admin_inquiry_path(inquiry)
+        %td
+          = inquiry.person ? link_to(h(inquiry.name), edit_admin_person_path(inquiry.person)) : h(inquiry.name)
+        %td= mail_to h(inquiry.email), nil, :encode => :hex
+        %td
+          %span.small.gray
+            == #{relative_time(inquiry.created_at, 1.day.ago).capitalize}
+        %td.center= icon "Search", admin_inquiry_path(inquiry)
